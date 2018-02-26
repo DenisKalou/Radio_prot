@@ -34,7 +34,7 @@ void radio_send(uint8_t* data, size_t len){
 }
 
 int main(void) {
-	set_file(0, 0, 0, 0);
+	set_data();
 	uint8_t data[256];
 
 	radio_prot rad;
@@ -51,8 +51,8 @@ int main(void) {
 	rad.h = 20;
 	rad.lp = 0;
 	prot_init(&rad);
-	test_set_prop(data, &rad);
-	test_get_prop(data, &rad);
+	test_set_file(data, &rad, 4);
+	//test_get_prop(data, &rad);
 	return EXIT_SUCCESS;
 }
 
@@ -199,4 +199,44 @@ void test_get_prop(uint8_t *data, radio_prot *rad){
 	printf("FILE LENGTH = %I64u\n", sizeof(fa_get_prop));
 	rad->radio_recv(data, sizeof(fa_get_prop));
 }
-12345
+void test_set_file(uint8_t *data, radio_prot *rad, uint8_t frag){
+	fa_set_file *s = (fa_set_file*)data;
+	s->dev.dev_id_from = 8;
+	s->dev.dev_id_to = 2;
+	s->dev.dev_sn_from = 0xFFFFFF;
+	s->dev.dev_sn_to = 0xAAAAAA;
+	s->nf = 0x0201;
+	s->lenFr = 56;
+	s->nff = frag;
+	for (int i = 0; i < s->lenFr; ++i){
+		s->data[i] = i;
+	}
+	*(uint16_t*)(s->data + s->lenFr) = 0xFFFF;
+	s->dev.func = FASETFILE;
+	printf("FILE LENGTH = %I64u\n", sizeof(fa_set_file) + s->lenFr + 2 );
+	rad->radio_recv(data, sizeof(fa_set_file) + s->lenFr + 2);
+}
+void test_get_crc_file(uint8_t *data, radio_prot *rad){
+	fa_get_crc_file *s = (fa_get_crc_file*)data;
+	s->dev.dev_id_from = 1;
+	s->dev.dev_id_to = 2;
+	s->dev.dev_sn_from = 0xFFFFFF;
+	s->dev.dev_sn_to = 0xAAAAAA;
+	s->ktu = 0b01001100;
+	s->crc = 0xFFFF;
+	s->dev.func = FAGETCRCTC;
+	printf("FILE LENGTH = %I64u\n", sizeof(fa_get_crc_tc));
+	rad->radio_recv(data, sizeof(fa_get_crc_tc));
+}
+void test_get_crc_tc(uint8_t *data, radio_prot *rad){
+	fa_get_crc_tc *s = (fa_get_crc_tc*)data;
+	s->dev.dev_id_from = 1;
+	s->dev.dev_id_to = 2;
+	s->dev.dev_sn_from = 0xFFFFFF;
+	s->dev.dev_sn_to = 0xAAAAAA;
+	s->ktu = 0b01001100;
+	s->crc = 0xFFFF;
+	s->dev.func = FAGETCRCTC;
+	printf("FILE LENGTH = %I64u\n", sizeof(fa_get_crc_tc));
+	rad->radio_recv(data, sizeof(fa_get_crc_tc));
+}

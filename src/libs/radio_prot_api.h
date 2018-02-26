@@ -4,6 +4,11 @@
 
 #else
 extern uint8_t buffer[1024];
+void set_data(){
+	for (int i = 0; i < 1024; ++i){
+		buffer[i] = (uint8_t)i;
+	}
+}
 void get_file(uint8_t file_num, size_t* len, uint8_t frag, uint8_t* data){
 	*len = 420;
 	uint8_t max_fr = *len / W_LEN;
@@ -21,8 +26,8 @@ void get_file(uint8_t file_num, size_t* len, uint8_t frag, uint8_t* data){
 	}
 }
 void set_file(uint8_t file_num, uint8_t frag, size_t len, uint8_t* data){
-	for (int i = 0; i < 1024; ++i){
-		buffer[i] = (uint8_t)i;
+	for(int i = 0; i < len; ++i){
+		printf("data[%d] = %d\n", i, data[i]);
 	}
 }
 void get_content(uint8_t clpl, size_t* len, uint8_t frag, uint8_t* data){
