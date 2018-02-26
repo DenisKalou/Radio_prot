@@ -199,3 +199,4 @@ void test_get_prop(uint8_t *data, radio_prot *rad){
 	printf("FILE LENGTH = %I64u\n", sizeof(fa_get_prop));
 	rad->radio_recv(data, sizeof(fa_get_prop));
 }
+12345
