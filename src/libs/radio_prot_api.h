@@ -44,7 +44,9 @@ void get_hf_content(uint8_t clpl, uint16_t* hf){
 	*hf = 0xABCD;
 }
 void set_content(uint8_t clpl, uint8_t frag, uint8_t len, uint8_t* data){
-	return;
+	for(int i = 0; i < len; ++i){
+		printf("data[%d] = %d\n", i, data[i]);
+	}
 }
 void get_filter(uint8_t lang, uint8_t filter_point_num, size_t* len, uint8_t frag, uint8_t* data){
 	*len = 122;
@@ -65,10 +67,14 @@ void set_filter(uint8_t lang, uint8_t filter_point_num, uint8_t max_frag, uint8_
 	return;
 }
 void get_ts(uint8_t* t_type, uint16_t* t_num, uint8_t* t_lit, uint8_t* t_dir){
-	return;
+	*t_type = 191;
+	*t_num = 0xC1C0;
+	*t_lit = 194;
+	*t_dir = 195;
+	printf("GET_TS\ntype = %d\nnum = %d\nletera = %d\ndirection = %d\n", *t_type, *t_num, *t_lit, *t_dir);
 }
 void set_ts(uint8_t t_type, uint8_t t_num, uint8_t t_lit, uint8_t t_dir){
-	return;
+	printf("SET_TS\ntype = %d\nnum = %d\nletera = %d\ndirection = %d\n", t_type, t_num, t_lit, t_dir);
 }
 void get_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data){
 	for (int i = 0; i < params_qty; ++i){
@@ -76,6 +82,10 @@ void get_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data){
 	}
 }
 uint8_t set_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data){
+	printf("SETTING PARAMS\n");
+	for (int i = 0; i < params_qty; ++i){
+		printf("params_data[%d] = %d\n", i, params_data[i]);
+	}
 	return 0;
 }
 /*void radio_send(uint8_t* data, size_t len){

@@ -175,11 +175,17 @@
 			case FACALLFILTER:
 			{		
 				fa_call_filter *dev_data = (fa_call_filter*)data;
-				if (crc16_calc(data, len - 4) != dev_data->crc) break;
+				if (crc16_calc(data, len - 4) != dev_data->crc) {
+					if (DEBUG) printf("Wrong pkt crc(fr_call_filter)\n");
+					break;
+				}
 				fr_call_filter *new_data = (fr_call_filter*)prot_buff;
 				out_data_len = sizeof(fr_call_filter);
 				//if (dev_data->np == 5) alarm(); /*по протоколу должно быть, но нигде не реализовано*/
-				if (dev_data->np == 255) break;
+				if (dev_data->np == 255) {
+					if (DEBUG) printf("DO NOT CALL FILTER\n");
+					break;
+				}
 				size_t f_len = 0;
 				get_filter(dev_data->l, dev_data->np,  &f_len, new_data->nFiltra, new_data->data);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -204,8 +210,14 @@
 			case FASETTS:
 			{
 				fa_set_ts *dev_data = (fa_set_ts*)data;
-				if (crc16_calc(data, len - 2) != dev_data->crc) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != dev_data->crc) {
+					if (DEBUG) printf("Wrong pkt crc(fr_set_ts)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_set_ts)\n");
+					break;
+				}
 				fr_set_ts *new_data = (fr_set_ts*)prot_buff;
 				out_data_len = sizeof(fr_set_ts);
 				if (dev_data->tts == 255)
@@ -232,8 +244,14 @@
 			case FASETPROP:
 			{		
 				fa_set_prop *dev_data = (fa_set_prop*)data;
-				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) {
+					if (DEBUG) printf("Wrong pkt crc(fr_set_prop)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_set_prop)\n");
+					break;
+				}
 				fr_set_prop *new_data = (fr_set_prop*)prot_buff;
 				out_data_len = sizeof(fr_set_prop);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -248,8 +266,14 @@
 			case FAGETPROP:
 			{	
 				fa_get_prop *dev_data = (fa_get_prop*)data;
-				if (crc16_calc(data, len - 2) != dev_data->crc) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != dev_data->crc){
+					if (DEBUG) printf("Wrong pkt crc(fr_get_prop)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8){
+					if (DEBUG) printf("Its not radio setter(fr_get_prop)\n");
+					break;
+				}
 				fr_get_prop *new_data = (fr_get_prop*)prot_buff;
 				out_data_len = sizeof(fr_get_prop);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -257,6 +281,7 @@
 				new_data->nfp = dev_data->nfp;
 				new_data->qp = dev_data->qp;
 				get_params(new_data->nfp, new_data->qp, new_data->vp);
+				out_data_len += new_data->qp * 2 + 2;
 				while(out_data_len % 8) prot_buff[out_data_len++ - 2] = 0;
 				*(uint16_t*)(prot_buff + out_data_len - 2) = crc16_calc(prot_buff, out_data_len - 2);
 				
@@ -265,8 +290,14 @@
 			case FASETCONTENT:
 			{	
 				fa_set_content *dev_data = (fa_set_content*)data;
-				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) {
+					if (DEBUG) printf("Wrong pkt crc(fr_set_content)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_set_content)\n");
+					break;
+				}
 				fr_set_content *new_data = (fr_set_content*)prot_buff;
 				out_data_len = sizeof(fr_set_content);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -299,8 +330,14 @@
 			case FASETFILE:
 			{	
 				fa_set_file *dev_data = (fa_set_file*)data;
-				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) {
+					if (DEBUG) printf("Wrong pkt crc(fr_set_file)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_set_file)\n");
+					break;
+				}
 				fr_set_file *new_data = (fr_set_file*)prot_buff;
 				out_data_len = sizeof(fr_set_file);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -317,8 +354,14 @@
 			case FAGETCRCFILE:
 			{	
 				fa_get_crc_file *dev_data = (fa_get_crc_file*)data;
-				if (crc16_calc(data, len - 6) != dev_data->crc) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 6) != dev_data->crc) {
+					if (DEBUG) printf("Wrong pkt crc(fr_get_crc_file)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_get_crc_file)\n");
+					break;
+				}
 				fr_get_crc_file *new_data = (fr_get_crc_file*)prot_buff;
 				out_data_len = sizeof(fr_get_crc_file);
 				reverse_dev(&new_data->dev, dev_data->dev);
@@ -332,8 +375,14 @@
 			case FAGETCRCTC:
 			{
 				fa_get_crc_tc *dev_data = (fa_get_crc_tc*)data;
-				if (crc16_calc(data, len - 6) != dev_data->crc) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 6) != dev_data->crc) {
+					if (DEBUG) printf("Wrong pkt crc(fr_get_crc_tc)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_get_crc_tc)\n");
+					break;
+				}
 				fr_get_crc_tc *new_data = (fr_get_crc_tc*)prot_buff;
 				out_data_len = sizeof(fr_get_crc_tc);
 				reverse_dev(&new_data->dev, dev_data->dev);
