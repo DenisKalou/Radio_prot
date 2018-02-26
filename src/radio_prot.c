@@ -138,3 +138,17 @@ void test_filter(uint8_t *data, radio_prot *rad, uint8_t frag){
 	printf("FILE LENGTH = %I64u\n", sizeof(fa_call_filter));
 	rad->radio_recv(data, sizeof(fa_call_filter));
 }
+void test_set_content(uint8_t *data, radio_prot *rad, uint8_t frag){
+	fa_call_filter *s = (fa_call_filter*)data;
+	s->dev.dev_id_from = 1;
+	s->dev.dev_id_to = 2;
+	s->dev.dev_sn_from = 0xFFFFFF;
+	s->dev.dev_sn_to = 0xAAAAAA;
+	s->l = 1;
+	s->nFiltra = frag;
+	s->crc = 0xFFFF;
+	s->np = 21;
+	s->dev.func = FACALLFILTER;
+	printf("FILE LENGTH = %I64u\n", sizeof(fa_call_filter));
+	rad->radio_recv(data, sizeof(fa_call_filter));
+}
