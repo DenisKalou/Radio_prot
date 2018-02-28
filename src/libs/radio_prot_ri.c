@@ -15,7 +15,16 @@
 		lhv_dev->dev_sn_to   = rhv_dev.dev_sn_from;
 	}
 	void door_stat_send(uint8_t status){
-		return;
+		this_device->door_status = status;
+		fr_get_state new_data;
+		new_data.dev.dev_id_from = this_device->dev_id;
+		new_data.dev.dev_sn_from = this_device->dev_sn;
+		new_data.dev.dev_id_to = 0;
+		new_data.dev.dev_sn_to = 0;
+		new_data.dev.func = FRGETSTATE;
+		new_data.door_open = this_device->door_status;
+		new_data.crc = crc16_calc((uint8_t*)&new_data, sizeof(fr_get_state) - 2);
+		radio_send((uint8_t*)&new_data, sizeof(fr_get_state));
 	}
 	void radio_receive(uint8_t *data, size_t len)
 	{
@@ -312,16 +321,21 @@
 			/*case FASAVEFIRMWARE:
 			{	
 				fa_save_firmware *dev_data = (fa_save_firmware*)data;
-				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) break;
-				if (dev->dev_id_from != 8) break;
+				if (crc16_calc(data, len - 2) != *(uint16_t*)(data + len - 2)) {
+					if (DEBUG) printf("Wrong pkt crc(fr_save_firmware)\n");
+					break;
+				}
+				if (dev->dev_id_from != 8) {
+					if (DEBUG) printf("Its not radio setter(fr_save_firmware)\n");
+					break;
+				}
 				fr_save_firmware *new_data = (fr_save_firmware*)prot_buff;
 				out_data_len = sizeof(fr_save_firmware);
-				uint8_t* firmware = dev_data->data;
-				size_t firmware_len = len - 16; //РґР»РёРЅР° С„СЂР°РіРјРµРЅС‚Р° РїСЂРѕС€РёРІРєРё
 				reverse_dev(&new_data->dev, dev_data->dev);
-				new_data.dev.func = FRSAVEFIRMWARE;
-				new_data.clpl = dev_data->clpl;
-				new_data.nftk = dev_data->nftk;
+				new_data->dev.func = FRSAVEFIRMWARE;
+				if (dev_data->nf == 0xFFFF)
+				save_firmware();
+				
 				set_content(content, content_len, new_data.clpl, new_data.nftk);
 				new_data.crc = crc16_calc(&new_data, data_len - 2);
 				
@@ -367,7 +381,7 @@
 				reverse_dev(&new_data->dev, dev_data->dev);
 				new_data->dev.func = FRGETCRCFILE;
 				new_data->nf = dev_data->nf;
-				/*new_data->crcf = crc16_calc(file, file_len);*/
+				get_crc_file(new_data->nf, &new_data->crcf);
 				new_data->crc = crc16_calc((uint8_t*)new_data, out_data_len - 2);
 				
 				break;
@@ -405,7 +419,17 @@
 			}*/
 			case FAGETSTATE:
 			{
-				/*send_door_status(dev);*/
+				fa_get_state *dev_data = (fa_get_state*)data;
+				if (crc16_calc(data, len - 2) != dev_data->crc) {
+					if (DEBUG) printf("Wrong pkt crc(fr_get_state)\n");
+					break;
+				}
+				fr_get_state *new_data = (fr_get_state*)prot_buff;
+				out_data_len = sizeof(fr_get_state);
+				reverse_dev(&new_data->dev, dev_data->dev);
+				new_data->dev.func = FRGETSTATE;
+				new_data->door_open = this_device->door_open;
+				new_data->crc = crc16_calc((uint8_t*)new_data, out_data_len - 2);
 				break;
 			}
 		}
