@@ -6,7 +6,7 @@
 
 #define DEBUG 1
 #define WAV_LEN 120
-#define FRAG_LEN 128 /*максимальная длина фрагмента*/
+#define FRAG_LEN 128 /*РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РґР»РёРЅР° С„СЂР°РіРјРµРЅС‚Р°*/
 #define PROT_MASTER 0 /* 0 - slave, 1 - master*/
 
 #define FASEEK			0x00
@@ -55,7 +55,7 @@ uint8_t form_clpl(uint8_t lang, uint8_t lvl, uint8_t point);
 #pragma pack(push, 1)
 
 #if PROT_MASTER
-#define MAX_DEV 4 /*максимальное количество активных радиоинформаторов*/
+#define MAX_DEV 4 /*РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р°РєС‚РёРІРЅС‹С… СЂР°РґРёРѕРёРЅС„РѕСЂРјР°С‚РѕСЂРѕРІ*/
 	typedef struct 
 	{
 		uint8_t dev_id;
@@ -85,11 +85,13 @@ uint8_t form_clpl(uint8_t lang, uint8_t lvl, uint8_t point);
 #else
 	extern void get_file(uint8_t file_num, size_t* len, uint8_t frag, uint8_t* data);
 	extern void set_file(uint8_t file_num, uint8_t frag, size_t len, uint8_t* data);
+	extern void get_crc_file(uint8_t file_num, uint16_t* crcf);
 	extern void get_content(uint8_t clpl, size_t* len, uint8_t frag, uint8_t* data);
 	extern void get_hf_content(uint8_t clpl, uint16_t* hf);
 	extern void set_content(uint8_t clpl, uint8_t frag, uint8_t len, uint8_t* data);
 	extern void get_filter(uint8_t lang, uint8_t filter_point_num, size_t* len, uint8_t frag, uint8_t* data);
 	extern void set_filter(uint8_t lang, uint8_t filter_point_num, uint8_t max_frag, uint8_t frag, uint8_t* data);
+	extern void save_firmware(uint8_t frag, size_t len, uint8_t* data);
 	extern void get_ts(uint8_t* t_type, uint16_t* t_num, uint8_t* t_lit, uint8_t* t_dir);
 	extern void set_ts(uint8_t t_type, uint8_t t_num, uint8_t t_lit, uint8_t t_dir);
 	extern void get_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data);
@@ -335,7 +337,7 @@ typedef struct
 typedef struct
 {
 	dev_inf dev;
-	uint16_t firmVer;
+	uint16_t v;
 	uint16_t nf;
 	uint8_t lf;
 	uint8_t data[];
@@ -346,7 +348,7 @@ typedef struct
 typedef struct
 {
 	dev_inf dev;
-	uint16_t firmVer;
+	uint16_t v;
 	uint16_t nf;
 	uint8_t flags;
 	uint16_t crc;
@@ -487,7 +489,7 @@ typedef struct
 typedef struct
 {
 	dev_inf dev;
-	uint8_t dooropen;
+	uint8_t door_open;
 	uint32_t empty;
 	uint16_t crc;
 } fr_get_state;
