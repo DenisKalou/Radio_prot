@@ -1,5 +1,5 @@
 #define W_LEN 120
-#define F_LEN 128 /*максимальная длина фрагмента*/
+#define F_LEN 128 /*РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РґР»РёРЅР° С„СЂР°РіРјРµРЅС‚Р°*/
 #if PROT_MASTER
 
 #else
@@ -29,6 +29,9 @@ void set_file(uint8_t file_num, uint8_t frag, size_t len, uint8_t* data){
 	for(int i = 0; i < len; ++i){
 		printf("data[%d] = %d\n", i, data[i]);
 	}
+}
+void get_crc_file(uint8_t file_num, uint16_t* crcf) {
+	*crcf = 0xABCD;
 }
 void get_content(uint8_t clpl, size_t* len, uint8_t frag, uint8_t* data){
 	*len = 625;
