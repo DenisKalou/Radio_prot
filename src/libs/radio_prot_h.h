@@ -8,6 +8,10 @@
 #define WAV_LEN 120
 #define FRAG_LEN 128 /*максимальная длина фрагмента*/
 #define PROT_MASTER 0 /* 0 - slave, 1 - master*/
+#define FFW 2
+#define ER_FFW 3
+#define ER_CHECK 1
+#define LF 0
 
 #define FASEEK			0x00
 #define FRSEEK			0x01
@@ -48,9 +52,6 @@
 extern void radio_send(uint8_t* data, size_t len);
 
 void radio_recv(uint8_t* data, size_t len);
-void data_parse(uint8_t* data, uint8_t len);
-
-uint8_t form_clpl(uint8_t lang, uint8_t lvl, uint8_t point);
 
 #pragma pack(push, 1)
 
@@ -83,36 +84,43 @@ uint8_t form_clpl(uint8_t lang, uint8_t lvl, uint8_t point);
 	
 
 #else
-	extern void get_file(uint8_t file_num, size_t* len, uint8_t frag, uint8_t* data);
-	extern void set_file(uint8_t file_num, uint8_t frag, size_t len, uint8_t* data);
-	extern void get_crc_file(uint8_t file_num, uint16_t* crcf);
-	extern void get_content(uint8_t clpl, size_t* len, uint8_t frag, uint8_t* data);
-	extern void get_hf_content(uint8_t clpl, uint16_t* hf);
-	extern void set_content(uint8_t clpl, uint8_t frag, uint8_t len, uint8_t* data);
-	extern void get_filter(uint8_t lang, uint8_t filter_point_num, size_t* len, uint8_t frag, uint8_t* data);
-	extern void set_filter(uint8_t lang, uint8_t filter_point_num, uint8_t max_frag, uint8_t frag, uint8_t* data);
-	extern void save_firmware(uint8_t frag, size_t len, uint8_t* data);
-	extern void get_ts(uint8_t* t_type, uint16_t* t_num, uint8_t* t_lit, uint8_t* t_dir);
-	extern void set_ts(uint8_t t_type, uint8_t t_num, uint8_t t_lit, uint8_t t_dir);
-	extern void get_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data);
-	extern uint8_t set_params(uint8_t param_num, uint8_t params_qty, uint16_t *params_data);
-	
-	typedef struct 
+	typedef struct strProtRadio
 	{
-		uint8_t dev_id;
-		uint32_t dev_sn:24;
-		uint8_t al[5];
-		uint8_t lp;
-		uint16_t ap;
-		uint8_t h;
-		uint8_t fl;
-		uint8_t door_open;
-		void (*radio_recv)(uint8_t*, size_t);
-		void (*door_status)(uint8_t);
-	} radio_prot;
+		struct strHwRadioAAL
+		{
+			uint16_t (*crc16_calc)(uint8_t* data, size_t len);
+			void (*get_device_data)(uint8_t* dev_id, uint32_t* dev_sn);
+			void (*get_params_data)(uint8_t al[5], uint8_t* lp, uint16_t* ap, uint8_t* h,
+					uint8_t* fl);
+			void (*firmware_check)(uint16_t* version, uint16_t* last_fr);
+			void (*get_file)(uint8_t file_num, size_t* len, uint8_t frag, uint8_t* data);
+			void (*set_file)(uint8_t file_num, uint8_t frag, size_t len, uint8_t* data);
+			void (*get_crc_file)(uint8_t file_num, uint16_t* crcf);
+			void (*get_content)(uint8_t clpl, size_t* len, uint8_t frag, uint8_t* data);
+			void (*get_hf_content)(uint8_t clpl, uint16_t* hf);
+			void (*set_content)(uint8_t clpl, uint8_t frag, size_t len, uint8_t* data);
+			uint8_t (*call_filter)(uint8_t lang, uint8_t filter_point_num, size_t* len,
+					uint8_t frag, uint8_t* data);
+			void (*set_filter)(uint8_t lang, uint8_t filter_point_num, uint8_t max_frag,
+					uint8_t frag, uint8_t* data);
+			uint8_t (*save_firmware)(uint8_t frag, uint8_t last_fr_flag, uint8_t* data);
+			void (*get_ts)(uint8_t* t_type, uint16_t* t_num, uint8_t* t_lit, uint8_t* t_dir);
+			void (*set_ts)(uint8_t t_type, uint8_t t_num, uint8_t t_lit, uint8_t t_dir);
+			void (*get_params)(uint8_t param_num, uint8_t params_qty, uint16_t *params_data);
+			uint8_t (*set_params)(uint8_t param_num, uint8_t params_qty, uint16_t *params_data);
+			void (*get_str)(uint8_t str_num, size_t* str_len, uint8_t data[]);
+			uint8_t (*set_str)(uint8_t str_num, size_t str_len, uint8_t* data);
+			void (*get_date_time)(uint8_t* mon, uint8_t* day, uint8_t* hour, uint8_t* min, uint8_t* sec);
+			void (*set_date_time)(uint8_t mon, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
+		} hwRadioAAL;
+		void (*send_status) (uint8_t status);
+		void (*radio_recv)(uint8_t* data, size_t len);
+		void (*radio_send)(uint8_t* data, size_t len);
+	} protRadio;
+	extern protRadio *prot_radio;
 #endif
 
-void prot_init(radio_prot*);
+void prot_init(protRadio*);
 
 typedef struct
 {
@@ -480,7 +488,7 @@ typedef struct
 typedef struct
 {
 	dev_inf dev;
-	uint8_t dooropen;
+	uint8_t door_open;
 	uint32_t empty;
 	uint16_t crc;
 } fa_get_state;
